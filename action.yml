@@ -12,8 +12,32 @@ runs:
       with:
         token: ${{ inputs.github-key }}
 
+    - name: Check PR internal user
+      id: check-permissions
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-key }}
+      run: |
+        PR_AUTHOR=${{ github.event.pull_request.user.login }}
+        REPO_OWNER=${{ github.repository_owner }}
+        REPO_NAME=$(basename ${{ github.repository }})
+        
+        # Call GitHub API to get permissions
+        RESPONSE=$(curl -s \
+          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github+json" \
+          "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/collaborators/$PR_AUTHOR/permission")
+
+        PERMISSION=$(echo $RESPONSE | jq -r '.permission')
+
+        if [[ "$PERMISSION" == "write" || "$PERMISSION" == "admin" ]]; then
+          echo "internal=true" >> $GITHUB_OUTPUT
+        else
+          echo "internal=false" >> $GITHUB_OUTPUT
+        fi
+
     - name: Check PR title
       uses: actions/github-script@v4
+      if: steps.check-permissions.outputs.internal == '1'
       with:
         github-token: ${{ inputs.github-key }}
         script: |
