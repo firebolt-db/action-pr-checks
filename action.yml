@@ -34,6 +34,7 @@ runs:
         else
           echo "internal=false" >> $GITHUB_OUTPUT
         fi
+      shell: bash
 
     - name: Check PR title
       uses: actions/github-script@v4
