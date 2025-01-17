@@ -8,7 +8,7 @@ runs:
   using: "composite"
   steps:
     - name: Check title name convention
-      uses: jef/conventional-commits-pr-action@v1.0.0
+      uses: jef/conventional-commits-pr-action@v1.2.0
       with:
         token: ${{ inputs.github-key }}
 
