@@ -12,7 +12,7 @@ runs:
       with:
         token: ${{ inputs.github-key }}
 
-    - name: Check PR internal user
+    - name: Check PR created by internal user
       id: check-permissions
       env:
         GITHUB_TOKEN: ${{ inputs.github-key }}
