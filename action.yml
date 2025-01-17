@@ -10,7 +10,7 @@ runs:
     - name: Check title name convention
       uses: jef/conventional-commits-pr-action@v1.0.0
       with:
-        token: ${{ inputs.GITHUB_TOKEN }}
+        token: ${{ inputs.github-key }}
 
     - name: Check ticket formatting in PR title
       env:
