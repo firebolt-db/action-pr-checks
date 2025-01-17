@@ -22,3 +22,4 @@ runs:
           echo "PR title must contain a ticket number FIR-1234 or NoTicket"
           exit 1
         fi
+      shell: bash
