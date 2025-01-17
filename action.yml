@@ -38,7 +38,7 @@ runs:
 
     - name: Check PR title
       uses: actions/github-script@v4
-      if: steps.check-permissions.outputs.internal == '1'
+      if: steps.check-permissions.outputs.internal == 'true'
       with:
         github-token: ${{ inputs.github-key }}
         script: |
