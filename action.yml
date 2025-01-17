@@ -1,0 +1,24 @@
+name: 'Firebolt PR checks'
+description: 'Verify PR formatting'
+inputs:
+  github-key:
+    description: 'Github token'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Check title name convention
+      uses: jef/conventional-commits-pr-action@v1.0.0
+      with:
+        token: ${{ inputs.GITHUB_TOKEN }}
+
+    - name: Check ticket formatting in PR title
+      env:
+          TITLE: ${{ github.event.pull_request.title }}
+      run: |
+        # Check if the PR title contains a ticket number
+        # FIR- or NoTicket
+        if [[ ! $TITLE =~ (FIR-[0-9]+|NoTicket) ]]; then
+          echo "PR title must contain a ticket number FIR-1234 or NoTicket"
+          exit 1
+        fi
