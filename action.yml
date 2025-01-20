@@ -45,9 +45,9 @@ runs:
           const payload = context.payload
           const prTitle = payload.pull_request.title
           // The pattern for JIRA ticket format
-          const jiraPattern = /FIR-\d+/g
+          const jiraPattern = /([A-Z]+-\d+|NoTicket)/g
           if (!jiraPattern.test(prTitle)) {
-            core.setFailed('PR title does not match JIRA ticket format! Add FIR-XXXX to the PR title.')
+            core.setFailed('PR title does not match JIRA ticket format! Add FIR-XXXX or NoTicket to the PR title.')
           } else {
             console.log('PR title format is correct.')
           }
