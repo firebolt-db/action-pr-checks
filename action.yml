@@ -1,28 +1,74 @@
 name: 'Firebolt PR checks'
-description: 'Verify PR formatting'
+description: 'Validate that the PR title follows the Firebolt conventional-commit PR convention'
 inputs:
   github-key:
-    description: 'Github token'
-    required: true
+    description: 'GitHub token used to read the pull request (needs `pull-requests: read`)'
+    required: false
+    default: ${{ github.token }}
+  require-ticket:
+    description: >-
+      Require a ticket reference such as `(FB-123)` at the end of the title. Public repos leave
+      this off, because OSS contributors have no ticket.
+    required: false
+    default: 'false'
 runs:
   using: "composite"
   steps:
-    - name: Check title name convention
-      uses: jef/conventional-commits-pr-action@2ee589f151916f92da5e2887c38d5fe6402e803c # v1.3.0
+    # Bot PRs (Dependabot, release-please, the CI app) are skipped. The check uses the PR
+    # author's account type, which a contributor can't set, rather than the branch name.
+    - name: Validate PR title
+      if: ${{ github.event.pull_request.user.type != 'Bot' && inputs.require-ticket != 'true' }}
+      uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-key }}
       with:
-        token: ${{ inputs.github-key }}
+        types: |
+          build
+          chore
+          ci
+          docs
+          feat
+          fix
+          perf
+          refactor
+          revert
+          style
+          test
+        requireScope: false
+        # The subject must not start with an uppercase character. A ticket such as
+        # `(FB-123)` at the end is welcome but optional.
+        subjectPattern: ^(?![A-Z]).+$
+        subjectPatternError: |
+          The subject "{subject}" in the pull request title "{title}" must not start with an uppercase character.
 
-    - name: Check PR title
-      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+          Examples:
+            - `feat(api): add a new option`
+            - `fix: handle empty result sets (FB-123)`
+
+    - name: Validate PR title (ticket required)
+      if: ${{ github.event.pull_request.user.type != 'Bot' && inputs.require-ticket == 'true' }}
+      uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-key }}
       with:
-        github-token: ${{ inputs.github-key }}
-        script: |
-          const payload = context.payload
-          const prTitle = payload.pull_request.title
-          // The pattern for JIRA ticket format
-          const jiraPattern = /([A-Z]+-\d+|NoTicket)/g
-          if (!jiraPattern.test(prTitle)) {
-            core.setFailed('PR title does not match JIRA ticket format! Add FIR-XXXX or NoTicket to the PR title.')
-          } else {
-            console.log('PR title format is correct.')
-          }
+        types: |
+          build
+          chore
+          ci
+          docs
+          feat
+          fix
+          perf
+          refactor
+          revert
+          style
+          test
+        requireScope: false
+        subjectPattern: ^(?![A-Z]).+\s\((ARC|FIR|FB|FSH)-\d+\)$
+        subjectPatternError: |
+          The subject "{subject}" in the pull request title "{title}" must not start with an uppercase
+          character and must end with a ticket reference.
+
+          Examples:
+            - `feat(api): add a new option (FB-123)`
+            - `chore: update GitHub workflow (FIR-123)`
